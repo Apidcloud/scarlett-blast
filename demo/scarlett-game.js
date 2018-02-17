@@ -1,8 +1,10 @@
-//var CustomMSDFShader = require("./shaders/customMSDFShader");
+'use strict';
 
-var DISPLAY_WIDTH = 1920,
+const svgMesh3d = require('svg-mesh-3d');
+
+const DISPLAY_WIDTH = 1920,
   HALF_DISPLAY_WIDTH = DISPLAY_WIDTH / 2;
-var DISPLAY_HEIGHT = 500,
+const DISPLAY_HEIGHT = 500,
   HALF_DISPLAY_HEIGHT = DISPLAY_HEIGHT / 2;
 
 var Game = SC.Game;

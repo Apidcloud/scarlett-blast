@@ -16,5 +16,8 @@
     "webpack": "4.0.0-beta.2",
     "webpack-cli": "2.0.6",
     "webpack-dev-server": "3.0.0-beta.1"
+  },
+  "dependencies": {
+    "svg-mesh-3d": "1.1.0"
   }
 }
