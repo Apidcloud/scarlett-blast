@@ -1,0 +1,14 @@
+{
+  "name": "scarlett-blast",
+  "version": "0.0.0-development",
+  "description": "scarlett animation demo based on svg-mesh-3d",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "scarlett"
+  ],
+  "author": "Apidcloud <luisapidcloud@hotmail.com>",
+  "license": "MIT"
+}
