@@ -4,11 +4,17 @@
   "description": "scarlett animation demo based on svg-mesh-3d",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "webpack",
+    "start": "webpack-dev-server --port 8080 --progress --colors --hot-only"
   },
   "keywords": [
     "scarlett"
   ],
   "author": "Apidcloud <luisapidcloud@hotmail.com>",
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "webpack": "4.0.0-beta.2",
+    "webpack-cli": "2.0.6",
+    "webpack-dev-server": "3.0.0-beta.1"
+  }
 }
