@@ -61,20 +61,21 @@ var gl = null;
 var customShader = new CustomShader();
 var directionBuffer = null;
 
-gameScene.initialize = async function() {
+let svgs = [];
+let counter = 0;
 
-  let svgPath;
+gameScene.initialize = async function() {
 
   try {
     const svg = await xmlToJSAsync(ContentLoader.getFile("logo").content);
-    svgPath = svg.svg.path[0].$.d;
+    svgs.push(svg.svg.path[0].$.d);
   }
   catch (err) {
     console.log('ERROR:', err);
     return;
   }
 
-  let complex = svgMesh3d(svgPath, {
+  let complex = svgMesh3d(svgs[0], {
     scale: 10,
     simplify: 0.01,
     // play with this value for different aesthetic
@@ -88,9 +89,13 @@ gameScene.initialize = async function() {
   const attributes = getAnimationAttributes(complex.positions, complex.cells)
 
   const directions = attributes.directions.reduce((a, b) => a.concat(b))
+  const centroids = attributes.centroids.reduce((a, b) => a.concat(b));
 
-  const scarlettVertices = complex.positions.map(position => [position[0], position[1]]);
- 
+  console.log('directions', directions.length);
+  console.log('centroids', centroids.length);
+
+  // multiplied by -1 because the y camera coordinate is inverted.
+  const scarlettVertices = complex.positions.map(position => [position[0], -1*position[1]]);
 
   // counter clock-wise triangle vertices, starting top
   var triangleVertices = [
@@ -130,6 +135,10 @@ gameScene.initialize = async function() {
     1.0
   ]);
 
+  gl.uniform1f(customShader.uniforms.uAnimation._location, false, 0.0);
+
+  this._camera.x = 0.0;
+  this._camera.y = 0.0;
   this._camera.zoom = 0.01;
 
   //gameScene.addGameObject(new Geometry());
@@ -144,23 +153,28 @@ gameScene.lateUpdate = function(delta) {
   }
 };
 
+var duration = 1.5;
+var animationValue = 0.0;
+var time = 0;
+var flip = false;
+
 gameScene.render = function(delta) {
+  time += delta;
+  animationValue = time / duration;
+  animationValue = flip ? 1 - animationValue : animationValue
+  if (time >= duration){
+    time = 0;
+    flip = !flip;
+  }
 
   gl.useProgram(customShader.getProgram());
-  
-  this._camera.x = 0.0;
-  this._camera.y = 0.0;
-  
-
-  const cameraMatrix = game.getActiveCamera().getMatrix();
-
-  console.log(cameraMatrix);
 
   gl.bindBuffer(gl.ARRAY_BUFFER, directionBuffer);
   gl.vertexAttribPointer(customShader.attributes.aDirection, 2, gl.FLOAT, false, 0, 0);
   gl.enableVertexAttribArray(customShader.attributes.aDirection);
 
-  gl.uniformMatrix4fv(customShader.uniforms.uMatrix._location, false, cameraMatrix);
+  gl.uniform1f(customShader.uniforms.uAnimation._location, animationValue);
+  gl.uniformMatrix4fv(customShader.uniforms.uMatrix._location, false, this._camera.getMatrix());
   gl.uniformMatrix4fv(customShader.uniforms.uTransform._location, false, basicMesh.getMatrix());
 
   basicMesh.render(delta, this._spriteBatch);
@@ -175,14 +189,18 @@ function getAnimationAttributes (positions, cells) {
     const center = triangleCentroid(triangle)
     const dir = [center[0], center[1]];
     centroids.push(dir, dir);
-
-    //const anim = [Math.random(), Math.random()];
-    //directions.push(anim, anim)
+    centroids.push(dir, dir);
+    centroids.push(dir, dir);
+    const anim = [Math.random(), Math.random()];
+    directions.push(anim, anim);
+    directions.push(anim, anim);
+    directions.push(anim, anim);
   }
+  /*
   for (let j = 0; j < positions.length; j++) {
     const anim = [Math.random(), Math.random()];
     directions.push(anim, anim)
-  }
+  }*/
 
   return { directions, centroids }
 }

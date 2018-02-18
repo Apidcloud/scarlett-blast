@@ -9,11 +9,12 @@ const shaderContent = {
     attribute vec2 aCentroid;
     uniform mat4 uMatrix;
     uniform mat4 uTransform;
+    uniform float uAnimation;
  
 	  void main()
 	  {	
       // transform model-space position by explosion amount
-      vec2 tPos = aPos + aDirection * 1.0;
+      vec2 tPos = aPos + aDirection * uAnimation;
 
       // x and y, z and w
 		  gl_Position = uMatrix * uTransform * vec4(tPos, 0.0, 1.0); // webgl position is a vector 4, but we are only sending a vector 2.
@@ -34,6 +35,7 @@ const shaderContent = {
     uTest: [1.0, 1.0, 1.0, 1.0],
     uMatrix: { type: "mat4", value: new Float32Array(16) },
     uTransform: { type: "mat4", value: new Float32Array(16) },
+    uAnimation: { type: "f", value: 0 },
   },
   attributes: {
     aPos: 0,
