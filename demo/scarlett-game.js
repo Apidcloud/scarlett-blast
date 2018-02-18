@@ -3,9 +3,9 @@
 import reindex from 'mesh-reindex';
 import unindex from 'unindex-mesh';
 import triangleCentroid from 'triangle-centroid';
+import CustomShader from './shaders/customShader';
 
 const svgMesh3d = require('svg-mesh-3d');
-const CustomShader = require('./shaders/customShader');
 const xml2js = require('xml2js');
 const promisify = require('util.promisify');
 const xmlToJSAsync = promisify(xml2js.parseString);
