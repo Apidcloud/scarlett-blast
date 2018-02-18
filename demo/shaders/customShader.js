@@ -1,5 +1,5 @@
 //const frag = require("./customFx.frag");
-import Game from "../src/core/game";
+//import Game from "../src/core/game";
 
 const shaderContent = {
   vertex: `
@@ -45,6 +45,6 @@ const shaderContent = {
 export default class CustomShader extends SC.Shader {
   constructor() {
     super(shaderContent.vertex, shaderContent.fragment, shaderContent.uniforms, shaderContent.attributes);
-    this.xpto = new Game();
+    //this.xpto = new Game();
   }
 }

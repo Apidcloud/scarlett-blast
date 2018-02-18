@@ -5,13 +5,13 @@ const UglifyJSPlugin = require('uglifyjs-webpack-plugin');
 
 module.exports = {
   target: 'web',
-  mode: 'production',
-  devtool: ' ',
+  mode: 'development',
+  devtool: 'source-map',
   entry: './demo/scarlett-game.js',
   output: {
     path: path.resolve(relativeBuildPath),
     publicPath: relativeOutputPath,
-    filename: 'bundle.min.js'
+    filename: 'bundle.js'
   },
   optimization: {
     minimize: false
@@ -28,7 +28,7 @@ module.exports = {
         }]
       }
     ]
-  },
+  }/*,
   plugins: [
     new UglifyJSPlugin({
       uglifyOptions: {
@@ -37,11 +37,11 @@ module.exports = {
         beautify: false,
         compress: false,
         comments: false,
-        mangle: false,
+        mangle: true,
         toplevel: false,
         keep_classnames: true,
         keep_fnames: true
       }
     })
-  ]
+  ]*/
 };
