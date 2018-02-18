@@ -1,15 +1,20 @@
 const path = require('path');
 const relativeBuildPath = 'build';
 const relativeOutputPath = 'demo';
+const UglifyJSPlugin = require('uglifyjs-webpack-plugin');
 
 module.exports = {
-  mode: "development",
-  devtool: 'source-map',
+  target: 'web',
+  mode: 'production',
+  devtool: ' ',
   entry: './demo/scarlett-game.js',
   output: {
     path: path.resolve(relativeBuildPath),
     publicPath: relativeOutputPath,
-    filename: 'bundle.js'
+    filename: 'bundle.min.js'
+  },
+  optimization: {
+    minimize: false
   },
   module: {
     rules: [
@@ -23,5 +28,20 @@ module.exports = {
         }]
       }
     ]
-  }
+  },
+  plugins: [
+    new UglifyJSPlugin({
+      uglifyOptions: {
+        warning: "verbose",
+        ecma: 6,
+        beautify: false,
+        compress: false,
+        comments: false,
+        mangle: false,
+        toplevel: false,
+        keep_classnames: true,
+        keep_fnames: true
+      }
+    })
+  ]
 };
