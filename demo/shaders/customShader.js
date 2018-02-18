@@ -16,7 +16,7 @@ const shaderContent = {
       vec2 tPos = aPos + aDirection * 1.0;
 
       // x and y, z and w
-		  gl_Position = vec4(tPos, 0.0, 1.0); // webgl position is a vector 4, but we are only sending a vector 2.
+		  gl_Position = uMatrix * uTransform * vec4(tPos, 0.0, 1.0); // webgl position is a vector 4, but we are only sending a vector 2.
     }
     `
   ,

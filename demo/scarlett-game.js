@@ -10,7 +10,7 @@ const xml2js = require('xml2js');
 const promisify = require('util.promisify');
 const xmlToJSAsync = promisify(xml2js.parseString);
 
-const DISPLAY_WIDTH = 1920, HALF_DISPLAY_WIDTH = DISPLAY_WIDTH / 2;
+const DISPLAY_WIDTH = 1366, HALF_DISPLAY_WIDTH = DISPLAY_WIDTH / 2;
 const DISPLAY_HEIGHT = 500, HALF_DISPLAY_HEIGHT = DISPLAY_HEIGHT / 2;
 
 var Game = SC.Game;
@@ -76,9 +76,9 @@ gameScene.initialize = async function() {
 
   let complex = svgMesh3d(svgPath, {
     scale: 10,
-    simplify: 0.01
+    simplify: 0.01,
     // play with this value for different aesthetic
-    // randomization: 500, 
+    randomization: 500
   });
 
   // split mesh into separate triangles so no vertices are shared
@@ -106,7 +106,7 @@ gameScene.initialize = async function() {
     color: Color.fromRGBA(255, 255, 255, 1.0),
   });
 
-  basicMesh.transform.setPosition(10, 10);
+  basicMesh.transform.setPosition(0, 0);
 
   gl = GameManager.renderContext.getContext();
 
@@ -130,6 +130,8 @@ gameScene.initialize = async function() {
     1.0
   ]);
 
+  this._camera.zoom = 0.01;
+
   //gameScene.addGameObject(new Geometry());
   gameScene.addGameObject(basicMesh);
 };
@@ -145,14 +147,21 @@ gameScene.lateUpdate = function(delta) {
 gameScene.render = function(delta) {
 
   gl.useProgram(customShader.getProgram());
+  
+  this._camera.x = 0.0;
+  this._camera.y = 0.0;
+  
+
   const cameraMatrix = game.getActiveCamera().getMatrix();
+
+  console.log(cameraMatrix);
 
   gl.bindBuffer(gl.ARRAY_BUFFER, directionBuffer);
   gl.vertexAttribPointer(customShader.attributes.aDirection, 2, gl.FLOAT, false, 0, 0);
   gl.enableVertexAttribArray(customShader.attributes.aDirection);
 
-  //gl.uniformMatrix4fv(customShader.uniforms.uMatrix._location, false, cameraMatrix);
-  //gl.uniformMatrix4fv(customShader.uniforms.uTransform._location, false, basicMesh.getMatrix());
+  gl.uniformMatrix4fv(customShader.uniforms.uMatrix._location, false, cameraMatrix);
+  gl.uniformMatrix4fv(customShader.uniforms.uTransform._location, false, basicMesh.getMatrix());
 
   basicMesh.render(delta, this._spriteBatch);
 };
@@ -170,7 +179,7 @@ function getAnimationAttributes (positions, cells) {
     //const anim = [Math.random(), Math.random()];
     //directions.push(anim, anim)
   }
-  for(let j = 0; j < positions.length; j++) {
+  for (let j = 0; j < positions.length; j++) {
     const anim = [Math.random(), Math.random()];
     directions.push(anim, anim)
   }
