@@ -1,6 +1,7 @@
 'use strict';
 
 const svgMesh3d = require('svg-mesh-3d');
+const CustomShader = require('./shaders/customShader');
 
 const DISPLAY_WIDTH = 1920,
   HALF_DISPLAY_WIDTH = DISPLAY_WIDTH / 2;
@@ -24,13 +25,11 @@ var BMFontParser = SC.BMFontParser;
 var FileContext = SC.FileContext;
 var FontLoader = SC.FontLoader;
 var Path = SC.Path;
+var Geometry = SC.Geometry;
 
 var game = new Game({ target: "canvas" });
-var text;
-var textTexture;
-var newText;
-
 game.init();
+var basicMesh = null;
 
 var gameScene = new GameScene({
   name: "my game scene 1",
@@ -42,12 +41,14 @@ var gameScene = new GameScene({
 GameManager.activeProjectPath = "/";
 
 ContentLoader.loadAll({
-  images: [
+  files: [
     { 
-      //path: "assets/triangle-background.png", alias: "background" 
+      path: "assets/svg-entypo-social/vimeo.svg", alias: "logo" 
     }
   ]
 }).then(async function(result) {
+
+  console.log(result);
 
   // needs to come before initializeTexDependencies
   game.changeScene(gameScene);
@@ -55,9 +56,39 @@ ContentLoader.loadAll({
 });
 
 var gl = null;
+// counter clock-wise triangle vertices, starting top
+var triangleVertices = [
+  [0.5, 0.7],
+  [-0.2, -0.2],
+  [0.2, -0.2]
+];
+
+var customShader = new CustomShader();
 
 gameScene.initialize = function() {
-  gl = SC.GameManager.renderContext.getContext();
+
+  var logo = ContentLoader.getFile("logo");
+  console.log(logo);
+
+  basicMesh = new Geometry({
+    shader: customShader,
+    name: "Geometry",
+    meshVertices: triangleVertices,
+    color: Color.fromRGBA(255, 255, 255, 1.0),
+  });
+
+  gl = GameManager.renderContext.getContext();
+
+  gl.useProgram(customShader.getProgram());
+  gl.uniform4fv(customShader.uniforms.uTest._location, [
+    255,
+    255,
+    255,
+    1.0
+  ]);
+
+  gameScene.addGameObject(new Geometry());
+  gameScene.addGameObject(basicMesh);
 };
 
 
@@ -69,7 +100,7 @@ gameScene.lateUpdate = function(delta) {
   }
 };
 
-gameScene.render = function(delta) {
+gameScene.render = function(delta, spriteBatch) {
 
 };
 

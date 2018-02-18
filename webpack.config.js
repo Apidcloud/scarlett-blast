@@ -10,5 +10,18 @@ module.exports = {
     path: path.resolve(relativeBuildPath),
     publicPath: relativeOutputPath,
     filename: 'bundle.js'
+  },
+  module: {
+    rules: [
+      {
+        test: /\.svg$/,
+        use: [{
+          loader: 'file-loader',
+          options: {
+            name: '[name].[ext]'
+          } 
+        }]
+      }
+    ]
   }
 };
