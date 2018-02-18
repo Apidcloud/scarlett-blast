@@ -10,8 +10,9 @@ const xml2js = require('xml2js');
 const promisify = require('util.promisify');
 const xmlToJSAsync = promisify(xml2js.parseString);
 
-const DISPLAY_WIDTH = 1366, HALF_DISPLAY_WIDTH = DISPLAY_WIDTH / 2;
+const DISPLAY_WIDTH = 1920, HALF_DISPLAY_WIDTH = DISPLAY_WIDTH / 2;
 const DISPLAY_HEIGHT = 500, HALF_DISPLAY_HEIGHT = DISPLAY_HEIGHT / 2;
+
 
 var Game = SC.Game;
 var GameScene = SC.GameScene;
@@ -48,7 +49,7 @@ GameManager.activeProjectPath = "/";
 ContentLoader.loadAll({
   files: [
     { 
-      path: "assets/svg-entypo-social/google+.svg", alias: "logo" 
+      path: "assets/svg-entypo-social/twitter.svg", alias: "logo" 
     }
   ]
 }).then(async function(result) {
@@ -60,6 +61,7 @@ ContentLoader.loadAll({
 var gl = null;
 var customShader = new CustomShader();
 var directionBuffer = null;
+var centroidBuffer = null;
 
 let svgs = [];
 let counter = 0;
@@ -79,7 +81,7 @@ gameScene.initialize = async function() {
     scale: 10,
     simplify: 0.01,
     // play with this value for different aesthetic
-    randomization: 500
+    randomization: 750
   });
 
   // split mesh into separate triangles so no vertices are shared
@@ -124,6 +126,13 @@ gameScene.initialize = async function() {
   gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(directions), gl.STATIC_DRAW);
   gl.vertexAttribPointer(customShader.attributes.aDirection, 2, gl.FLOAT, false, 0, 0);
 
+  centroidBuffer = gl.createBuffer();
+
+  gl.enableVertexAttribArray(customShader.attributes.aCentroid);
+  gl.bindBuffer(gl.ARRAY_BUFFER, centroidBuffer);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(centroids), gl.STATIC_DRAW);
+  gl.vertexAttribPointer(customShader.attributes.aCentroid, 2, gl.FLOAT, false, 0, 0);
+
   //const cameraMatrix = GameManager.activeGame.getActiveCamera().getMatrix();
   //gl.uniformMatrix4fv(customShader.uniforms.uMatrix._location, false, cameraMatrix);
   //gl.uniformMatrix4fv(customShader.uniforms.uTransform._location, false, basicMesh.getMatrix());
@@ -135,7 +144,8 @@ gameScene.initialize = async function() {
     1.0
   ]);
 
-  gl.uniform1f(customShader.uniforms.uAnimation._location, false, 0.0);
+  gl.uniform1f(customShader.uniforms.uAnimation._location, 0.0);
+  gl.uniform1f(customShader.uniforms.uScale._location, 0.0);
 
   this._camera.x = 0.0;
   this._camera.y = 0.0;
@@ -154,26 +164,49 @@ gameScene.lateUpdate = function(delta) {
 };
 
 var duration = 1.5;
-var animationValue = 0.0;
-var time = 0;
+
+var explosionAnimationValue = 0.0;
+var scaleAnimationValue = 0.0;
+
+var explosionTime = 0.0;
+var scaleTime = 0.0;
+
+
 var flip = false;
+var flipScale = false;
+
+gameScene.update = function(delta) {
+  explosionTime += delta;
+  scaleTime += delta;
+  
+  explosionAnimationValue = explosionTime / duration;
+  explosionAnimationValue = flip ? (1.0 - explosionAnimationValue) : explosionAnimationValue;
+
+  if (explosionTime > duration){
+    explosionTime = 0.0;
+    flip = !flip;
+  } 
+
+  explosionAnimationValue = MathHelper.clamp(explosionAnimationValue, 0.0, 1.0);
+  scaleAnimationValue = MathHelper.clamp(explosionAnimationValue, 0.0, 1.0);
+
+  console.log(scaleAnimationValue);
+};
 
 gameScene.render = function(delta) {
-  time += delta;
-  animationValue = time / duration;
-  animationValue = flip ? 1 - animationValue : animationValue
-  if (time >= duration){
-    time = 0;
-    flip = !flip;
-  }
-
   gl.useProgram(customShader.getProgram());
 
   gl.bindBuffer(gl.ARRAY_BUFFER, directionBuffer);
   gl.vertexAttribPointer(customShader.attributes.aDirection, 2, gl.FLOAT, false, 0, 0);
   gl.enableVertexAttribArray(customShader.attributes.aDirection);
 
-  gl.uniform1f(customShader.uniforms.uAnimation._location, animationValue);
+  gl.bindBuffer(gl.ARRAY_BUFFER, centroidBuffer);
+  gl.vertexAttribPointer(customShader.attributes.aCentroid, 2, gl.FLOAT, false, 0, 0);
+  gl.enableVertexAttribArray(customShader.attributes.aCentroid);
+
+  gl.uniform1f(customShader.uniforms.uAnimation._location, explosionAnimationValue);
+  gl.uniform1f(customShader.uniforms.uScale._location, scaleAnimationValue);
+  
   gl.uniformMatrix4fv(customShader.uniforms.uMatrix._location, false, this._camera.getMatrix());
   gl.uniformMatrix4fv(customShader.uniforms.uTransform._location, false, basicMesh.getMatrix());
 
