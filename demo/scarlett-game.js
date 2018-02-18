@@ -4,6 +4,7 @@ import reindex from 'mesh-reindex';
 import unindex from 'unindex-mesh';
 import triangleCentroid from 'triangle-centroid';
 import CustomShader from './shaders/customShader';
+import shuffle from 'array-shuffle';
 
 const svgMesh3d = require('svg-mesh-3d');
 const xml2js = require('xml2js');
@@ -13,6 +14,8 @@ const xmlToJSAsync = promisify(xml2js.parseString);
 const DISPLAY_WIDTH = 1920, HALF_DISPLAY_WIDTH = DISPLAY_WIDTH / 2;
 const DISPLAY_HEIGHT = 500, HALF_DISPLAY_HEIGHT = DISPLAY_HEIGHT / 2;
 
+const backgroundColor = "#E3ACABFF";
+const foregroundColor = "#111734FF";
 
 var Game = SC.Game;
 var GameScene = SC.GameScene;
@@ -33,6 +36,10 @@ var FontLoader = SC.FontLoader;
 var Path = SC.Path;
 var Geometry = SC.Geometry;
 
+const canvas = document.querySelector('canvas');
+canvas.addEventListener('touchstart', (ev) => ev.preventDefault());
+canvas.addEventListener('contextmenu', (ev) => ev.preventDefault());
+
 var game = new Game({ target: "canvas" });
 game.init();
 var basicMesh = null;
@@ -40,8 +47,7 @@ var basicMesh = null;
 var gameScene = new GameScene({
   name: "my game scene 1",
   game: game,
-  //backgroundColor: Color.fromHex("#403F63FF")
-  backgroundColor: Color.fromHex("#8DAABAFF")
+  backgroundColor: Color.fromHex(backgroundColor)
 });
 
 GameManager.activeProjectPath = "/";
@@ -93,24 +99,14 @@ gameScene.initialize = async function() {
   const directions = attributes.directions.reduce((a, b) => a.concat(b))
   const centroids = attributes.centroids.reduce((a, b) => a.concat(b));
 
-  console.log('directions', directions.length);
-  console.log('centroids', centroids.length);
-
   // multiplied by -1 because the y camera coordinate is inverted.
   const scarlettVertices = complex.positions.map(position => [position[0], -1*position[1]]);
 
-  // counter clock-wise triangle vertices, starting top
-  var triangleVertices = [
-    [0.5, 0.7],
-    [-0.2, -0.2],
-    [0.2, -0.2]
-  ];
-
   basicMesh = new Geometry({
     shader: customShader,
-    name: "Geometry",
+    name: "Geometry 1",
     meshVertices: scarlettVertices,
-    color: Color.fromRGBA(255, 255, 255, 1.0),
+    color: Color.fromHex(foregroundColor),
   });
 
   basicMesh.transform.setPosition(0, 0);
@@ -133,17 +129,6 @@ gameScene.initialize = async function() {
   gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(centroids), gl.STATIC_DRAW);
   gl.vertexAttribPointer(customShader.attributes.aCentroid, 2, gl.FLOAT, false, 0, 0);
 
-  //const cameraMatrix = GameManager.activeGame.getActiveCamera().getMatrix();
-  //gl.uniformMatrix4fv(customShader.uniforms.uMatrix._location, false, cameraMatrix);
-  //gl.uniformMatrix4fv(customShader.uniforms.uTransform._location, false, basicMesh.getMatrix());
-
-  gl.uniform4fv(customShader.uniforms.uTest._location, [
-    255,
-    255,
-    255,
-    1.0
-  ]);
-
   gl.uniform1f(customShader.uniforms.uAnimation._location, 0.0);
   gl.uniform1f(customShader.uniforms.uScale._location, 0.0);
 
@@ -163,34 +148,33 @@ gameScene.lateUpdate = function(delta) {
   }
 };
 
-var duration = 1.5;
+const duration = 1.5;
+const delay = 0.3;
 
-var explosionAnimationValue = 0.0;
-var scaleAnimationValue = 0.0;
+let explosionAnimationValue = 0.0;
+let scaleAnimationValue = 0.0;
 
-var explosionTime = 0.0;
-var scaleTime = 0.0;
+let explosionTime = 0.0;
+let scaleTime = 0.0;
 
 
-var flip = false;
-var flipScale = false;
+let flip = false;
+let flipScale = false;
 
-gameScene.update = function(delta) {
+gameScene.update = delta => {
   explosionTime += delta;
   scaleTime += delta;
   
   explosionAnimationValue = explosionTime / duration;
   explosionAnimationValue = flip ? (1.0 - explosionAnimationValue) : explosionAnimationValue;
 
-  if (explosionTime > duration){
+  if (explosionTime > duration + delay){
     explosionTime = 0.0;
     flip = !flip;
   } 
 
   explosionAnimationValue = MathHelper.clamp(explosionAnimationValue, 0.0, 1.0);
   scaleAnimationValue = MathHelper.clamp(explosionAnimationValue, 0.0, 1.0);
-
-  console.log(scaleAnimationValue);
 };
 
 gameScene.render = function(delta) {
