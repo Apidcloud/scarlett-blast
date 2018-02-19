@@ -50,7 +50,7 @@ var gameScene = new GameScene({
   backgroundColor: Color.fromHex(backgroundColor)
 });
 
-GameManager.activeProjectPath = "/demo/";
+GameManager.activeProjectPath = "./demo/";
 
 ContentLoader.loadAll({
   files: [
