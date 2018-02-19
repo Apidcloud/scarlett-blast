@@ -51,8 +51,8 @@ const shaderContent = {
     uColor: [1.0, 1.0, 1.0, 1.0],
     uMatrix: { type: "mat4", value: new Float32Array(16) },
     uTransform: { type: "mat4", value: new Float32Array(16) },
-    uAnimation: { type: "f", value: 1.0 },
-    uScale: { type: "f", value: 0 }
+    uAnimation: { type: "f", value: 0.0 },
+    uScale: { type: "f", value: 0.0 }
   },
   attributes: {
     aPos: 0,

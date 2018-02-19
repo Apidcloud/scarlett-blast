@@ -5,6 +5,7 @@ import unindex from 'unindex-mesh';
 import triangleCentroid from 'triangle-centroid';
 import CustomShader from './shaders/customShader';
 import shuffle from 'array-shuffle';
+import { first } from 'rxjs/operator/first';
 
 const svgMesh3d = require('svg-mesh-3d');
 const xml2js = require('xml2js');
@@ -89,6 +90,7 @@ gameScene.initialize = function() {
   this._camera.zoom = 0.01;
 };
 
+
 gameScene.lateUpdate = function(delta) {
   if (Keyboard.isKeyDown(Keys.Add)) {
     this._camera.zoom -= 0.01;
@@ -110,9 +112,11 @@ const startFadeIn = true;
 let fadeIn = startFadeIn;
 
 let times = 1;
+let meshUpdatedOnce = false;
 
 gameScene.update = delta => {
-  if (!flag) {
+  if (!flag || !meshUpdatedOnce){
+    meshUpdatedOnce = true;
     return;
   }
 
@@ -120,34 +124,36 @@ gameScene.update = delta => {
   scaleTime += delta;
   
   explosionAnimationValue = explosionTime / duration;
-  explosionAnimationValue = fadeIn ? explosionAnimationValue : (1.0 - explosionAnimationValue);
+  explosionAnimationValue = fadeIn ? (1.0 - explosionAnimationValue) : explosionAnimationValue;
 
   if (explosionTime > duration + delay){
+    // reset
     explosionTime = 0.0; 
 
     // the 2nd animation stops when times === 3
-    if (times % 3 === 0){
+    if (times % 2 === 0){
       // interrupt update while the next mesh isn't added to the scene
       flag = false;
-      // we want to discard this one as the animation has yet to start, 
-      // so we make it the opposite of what we started with
-      // because below it's going to be flipped again (i.e., fadeIn = !fadeIn)
-      fadeIn = !startFadeIn;
+      // make sure to reset values, so it renders correctly from the beginning
+      meshUpdatedOnce = false;
+      renderedMeshOnce = false;
+      // prepare next step
       stepAsync(counter, svgs).then(result => {
         counter = result;
       });
     }
     times++;
-
     fadeIn = !fadeIn;
   } 
 
   explosionAnimationValue = MathHelper.clamp(explosionAnimationValue, 0.0, 1.0);
-  scaleAnimationValue = MathHelper.clamp(explosionAnimationValue, 0.0, 1.0);
+  scaleAnimationValue = explosionAnimationValue;
 };
 
+let renderedMeshOnce = false;
+
 gameScene.render = function(delta) {
-  if (!basicMesh){
+  if (!basicMesh || !flag){
     return;
   }
 
@@ -161,8 +167,16 @@ gameScene.render = function(delta) {
   gl.vertexAttribPointer(customShader.attributes.aCentroid, 2, gl.FLOAT, false, 0, 0);
   gl.enableVertexAttribArray(customShader.attributes.aCentroid);
 
-  gl.uniform1f(customShader.uniforms.uAnimation._location, explosionAnimationValue);
-  gl.uniform1f(customShader.uniforms.uScale._location, scaleAnimationValue);
+  // make sure to start exactly as we want it to, to prevent an initial wrong flash
+  // e.g., wanting to fade-in but the full img being rendered for a split second
+  if (!renderedMeshOnce) {
+    gl.uniform1f(customShader.uniforms.uAnimation._location, startFadeIn ? 1.0 : 0.0);
+    gl.uniform1f(customShader.uniforms.uScale._location, startFadeIn ? 1.0 : 0.0);
+    renderedMeshOnce = true;
+  } else {
+    gl.uniform1f(customShader.uniforms.uAnimation._location, explosionAnimationValue);
+    gl.uniform1f(customShader.uniforms.uScale._location, scaleAnimationValue);
+  }
   
   gl.uniformMatrix4fv(customShader.uniforms.uMatrix._location, false, this._camera.getMatrix());
   gl.uniformMatrix4fv(customShader.uniforms.uTransform._location, false, basicMesh.getMatrix());
@@ -235,13 +249,14 @@ async function stepAsync(number, svgs){
   gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(centroids), gl.STATIC_DRAW);
   gl.vertexAttribPointer(customShader.attributes.aCentroid, 2, gl.FLOAT, false, 0, 0);
 
-  gl.uniform1f(customShader.uniforms.uAnimation._location, 0.0);
-  gl.uniform1f(customShader.uniforms.uScale._location, 0.0);
+  gl.uniform1f(customShader.uniforms.uAnimation._location, 1.0);
+  gl.uniform1f(customShader.uniforms.uScale._location, 1.0);
 
   //gameScene.addGameObject(new Geometry());
   gameScene.addGameObject(basicMesh);
+
+  hoverElement.href = svgs[counter].link;
   flag = true;
-  hoverElement.href = svgs[number].link;
 
   const nextStep = number + 1 >= svgs.length ? 0 : number + 1;
 
