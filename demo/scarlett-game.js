@@ -37,29 +37,30 @@ canvas.addEventListener('contextmenu', (ev) => ev.preventDefault());
 
 const hoverElement = document.querySelector('#special');
 
-var Game = SC.Game;
-var GameScene = SC.GameScene;
-var ContentLoader = SC.ContentLoader;
-var GameManager = SC.GameManager;
-var Sprite = SC.Sprite;
-var WrapMode = SC.WrapMode;
-var Texture2D = SC.Texture2D;
-var Text = SC.Text;
-var Color = SC.Color;
-var Keyboard = SC.Keyboard;
-var Keys = SC.Keys;
-var Vector2 = SC.Vector2;
-var MathHelper = SC.MathHelper;
-var BMFontParser = SC.BMFontParser;
-var FileContext = SC.FileContext;
-var FontLoader = SC.FontLoader;
-var Path = SC.Path;
-var Geometry = SC.Geometry;
+let Game = SC.Game;
+let GameScene = SC.GameScene;
+let ContentLoader = SC.ContentLoader;
+let GameManager = SC.GameManager;
+let Sprite = SC.Sprite;
+let WrapMode = SC.WrapMode;
+let Texture2D = SC.Texture2D;
+let Text = SC.Text;
+let Color = SC.Color;
+let Keyboard = SC.Keyboard;
+let Keys = SC.Keys;
+let Vector2 = SC.Vector2;
+let MathHelper = SC.MathHelper;
+let BMFontParser = SC.BMFontParser;
+let FileContext = SC.FileContext;
+let FontLoader = SC.FontLoader;
+let Path = SC.Path;
+let Geometry = SC.Geometry;
 
-var game = new Game({ target: "canvas" });
+let game = new Game({ target: "canvas" });
 game.init();
-var basicMesh = null;
-let counter = 0;
+
+let basicMesh = null;
+let svgStepCounter = 0;
 
 var gameScene = new GameScene({
   name: "my game scene 1",
@@ -72,11 +73,10 @@ GameManager.activeProjectPath = "./demo/";
 ContentLoader.loadAll({
   files: svgs
 }).then(async function(result) {
-  // needs to come before initializeTexDependencies
   game.changeScene(gameScene);
   game.setVirtualResolution(DISPLAY_WIDTH, DISPLAY_HEIGHT);
 
-  counter = await stepAsync(counter, svgs);
+  svgStepCounter = await stepAsync(svgStepCounter, svgs);
 });
 
 var gl = null;
@@ -88,15 +88,6 @@ gameScene.initialize = function() {
   this._camera.x = 0.0;
   this._camera.y = 0.0;
   this._camera.zoom = 0.01;
-};
-
-
-gameScene.lateUpdate = function(delta) {
-  if (Keyboard.isKeyDown(Keys.Add)) {
-    this._camera.zoom -= 0.01;
-  } else if (Keyboard.isKeyDown(Keys.Subtract)) {
-    this._camera.zoom += 0.01;
-  }
 };
 
 const duration = 1.5;
@@ -113,6 +104,7 @@ let fadeIn = startFadeIn;
 
 let times = 1;
 let meshUpdatedOnce = false;
+let renderedMeshOnce = false;
 
 gameScene.update = delta => {
   if (!flag || !meshUpdatedOnce){
@@ -138,8 +130,8 @@ gameScene.update = delta => {
       meshUpdatedOnce = false;
       renderedMeshOnce = false;
       // prepare next step
-      stepAsync(counter, svgs).then(result => {
-        counter = result;
+      stepAsync(svgStepCounter, svgs).then(result => {
+        svgStepCounter = result;
       });
     }
     times++;
@@ -149,8 +141,6 @@ gameScene.update = delta => {
   explosionAnimationValue = MathHelper.clamp(explosionAnimationValue, 0.0, 1.0);
   scaleAnimationValue = explosionAnimationValue;
 };
-
-let renderedMeshOnce = false;
 
 gameScene.render = function(delta) {
   if (!basicMesh || !flag){
@@ -255,7 +245,7 @@ async function stepAsync(number, svgs){
   //gameScene.addGameObject(new Geometry());
   gameScene.addGameObject(basicMesh);
 
-  hoverElement.href = svgs[counter].link;
+  hoverElement.href = svgs[number].link;
   flag = true;
 
   const nextStep = number + 1 >= svgs.length ? 0 : number + 1;
