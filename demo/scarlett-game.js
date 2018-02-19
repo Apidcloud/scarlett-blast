@@ -11,11 +11,15 @@ const xml2js = require('xml2js');
 const promisify = require('util.promisify');
 const xmlToJSAsync = promisify(xml2js.parseString);
 
-const DISPLAY_WIDTH = 1920, HALF_DISPLAY_WIDTH = DISPLAY_WIDTH / 2;
-const DISPLAY_HEIGHT = 500, HALF_DISPLAY_HEIGHT = DISPLAY_HEIGHT / 2;
+const DISPLAY_WIDTH = 1920;
+const DISPLAY_HEIGHT = 1080;
 
 const backgroundColor = "#E3ACABFF";
 const foregroundColor = "#111734FF";
+
+const canvas = document.querySelector('canvas');
+canvas.addEventListener('touchstart', (ev) => ev.preventDefault());
+canvas.addEventListener('contextmenu', (ev) => ev.preventDefault());
 
 var Game = SC.Game;
 var GameScene = SC.GameScene;
@@ -35,10 +39,6 @@ var FileContext = SC.FileContext;
 var FontLoader = SC.FontLoader;
 var Path = SC.Path;
 var Geometry = SC.Geometry;
-
-const canvas = document.querySelector('canvas');
-canvas.addEventListener('touchstart', (ev) => ev.preventDefault());
-canvas.addEventListener('contextmenu', (ev) => ev.preventDefault());
 
 var game = new Game({ target: "canvas" });
 game.init();
