@@ -1,5 +1,5 @@
 //const frag = require("./customFx.frag");
-import Game from "../src/core/game";
+//import Game from "../src/core/game";
 
 const shaderContent = {
   vertex: `
@@ -9,31 +9,50 @@ const shaderContent = {
     attribute vec2 aCentroid;
     uniform mat4 uMatrix;
     uniform mat4 uTransform;
+    uniform float uAnimation;
+    uniform float uScale;
  
+    #define PI 3.14
+
 	  void main()
 	  {	
       // transform model-space position by explosion amount
-      vec2 tPos = aPos + aDirection * 1.0;
+      // barebone
+      //vec2 tPos = aPos + aDirection * uAnimation;
+
+      float theta = (uAnimation) * (1.5 * PI) * sign(aCentroid.x);
+      mat2 rotMat = mat2(
+        vec2(cos(theta), sin(theta)),
+        vec2(-sin(theta), cos(theta))
+      );
+  
+      // push outward
+      vec2 offset = mix(vec2(0.0), aDirection * rotMat, uAnimation);
+
+      // scale triangles to their centroids
+      vec2 tPos = mix(aCentroid, aPos, 1.0 - uScale) + offset;
 
       // x and y, z and w
-		  gl_Position = vec4(tPos, 0.0, 1.0); // webgl position is a vector 4, but we are only sending a vector 2.
+		  gl_Position = uMatrix * uTransform * vec4(tPos, 0.0, 1.0);
     }
     `
   ,
   fragment: `
     precision mediump float;
-    uniform vec4 uTest;
+    uniform vec4 uColor;
 
 	  void main()
 	  {
-	    gl_FragColor = uTest; // fragment color set to red color
+	    gl_FragColor = uColor; 
 	  }
     `
   ,
   uniforms: {
-    uTest: [1.0, 1.0, 1.0, 1.0],
+    uColor: [1.0, 1.0, 1.0, 1.0],
     uMatrix: { type: "mat4", value: new Float32Array(16) },
     uTransform: { type: "mat4", value: new Float32Array(16) },
+    uAnimation: { type: "f", value: 0.0 },
+    uScale: { type: "f", value: 0.0 }
   },
   attributes: {
     aPos: 0,
@@ -45,6 +64,6 @@ const shaderContent = {
 export default class CustomShader extends SC.Shader {
   constructor() {
     super(shaderContent.vertex, shaderContent.fragment, shaderContent.uniforms, shaderContent.attributes);
-    this.xpto = new Game();
+    //this.xpto = new Game();
   }
 }

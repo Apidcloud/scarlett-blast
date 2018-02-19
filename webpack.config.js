@@ -11,10 +11,7 @@ module.exports = {
   output: {
     path: path.resolve(relativeBuildPath),
     publicPath: relativeOutputPath,
-    filename: 'bundle.min.js'
-  },
-  optimization: {
-    minimize: false
+    filename: 'bundle.js'
   },
   module: {
     rules: [
@@ -28,20 +25,5 @@ module.exports = {
         }]
       }
     ]
-  },
-  plugins: [
-    new UglifyJSPlugin({
-      uglifyOptions: {
-        warning: "verbose",
-        ecma: 6,
-        beautify: false,
-        compress: false,
-        comments: false,
-        mangle: false,
-        toplevel: false,
-        keep_classnames: true,
-        keep_fnames: true
-      }
-    })
-  ]
+  }
 };
