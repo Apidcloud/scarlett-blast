@@ -1,6 +1,6 @@
 # Scarlett Blast
 
-<img src="scarlett-blast.gif?raw=true" width="900px">
+<img src="scarlett-blast.gif?raw=true">
 
 ![with-coffee](https://img.shields.io/badge/made%20with-%E2%98%95%EF%B8%8F%20coffee-yellow.svg)
 ![with-water](https://img.shields.io/badge/made%20with-%F0%9F%92%A7%20water-blue.svg)
