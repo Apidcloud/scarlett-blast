@@ -126,6 +126,7 @@ gameScene.update = delta => {
     if (times % 2 === 0){
       // interrupt update while the next mesh isn't added to the scene
       flag = false;
+      hoverElement.style.display = 'none';
       // make sure to reset values, so it renders correctly from the beginning
       meshUpdatedOnce = false;
       renderedMeshOnce = false;
@@ -246,6 +247,7 @@ async function stepAsync(number, svgs){
   gameScene.addGameObject(basicMesh);
 
   hoverElement.href = svgs[number].link;
+  hoverElement.style.display = 'block';
   flag = true;
 
   const nextStep = number + 1 >= svgs.length ? 0 : number + 1;
