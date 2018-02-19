@@ -5,8 +5,8 @@ const UglifyJSPlugin = require('uglifyjs-webpack-plugin');
 
 module.exports = {
   target: 'web',
-  mode: 'production',
-  devtool: ' ',
+  mode: 'development',
+  devtool: 'source-map',
   entry: './demo/scarlett-game.js',
   output: {
     path: path.resolve(relativeBuildPath),

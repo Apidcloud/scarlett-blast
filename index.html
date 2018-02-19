@@ -109,9 +109,39 @@
         margin: 5px 0px;
       }
 
+      #special {
+        display: block;
+        position:fixed;
+        background-color: #00000000;
+        top: 50%;
+        left: 50%;
+        width:20em;
+        height:18em;
+        margin-top: -9em; /*set to a negative number 1/2 of your height*/
+        margin-left: -10em; /*set to a negative number 1/2 of your width*/
+        -webkit-transition: background-color 0.2s ease-out;
+        -moz-transition: background-color 0.2s ease-out;
+        -ms-transition: background-color 0.2s ease-out;
+        -o-transition: background-color 0.2s ease-out;
+        transition: background-color 0.2s ease-out;
+      }
+
+
+      #special:hover {
+        cursor: pointer;
+        background-color: #f3f3f331;
+        -webkit-transition: background-color 0.2s ease-out;
+        -moz-transition: background-color 0.2s ease-out;
+        -ms-transition: background-color 0.2s ease-out;
+        -o-transition: background-color 0.2s ease-out;
+        transition: background-color 0.2s ease-out;
+      }
+
     </style>
   </head>
   <body>
+    <a id="special" target="_blank" href="https://github.com/Apidcloud/scarlett-blast"></a>
+
     <!-- canvas -->
     <canvas id="canvas"></canvas>
 
